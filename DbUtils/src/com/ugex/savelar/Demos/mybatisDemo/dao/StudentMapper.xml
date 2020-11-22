@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace modify to your dao interface full name -->
+<mapper namespace="com.ugex.savelar.Demos.mybatisDemo.dao.StudentDao">
+    <!-- here add your dao interface methods implements sqls -->
+    <select id="findAll" resultType="student">
+        select * from Student
+    </select>
+    <select id="findById" resultType="student">
+        select * from Student where id=#{id}
+    </select>
+    <select id="findByName" resultType="student">
+        select * from Student where name like '%' #{id} '%'
+    </select>
+
+    <insert id="insertOne">
+        insert into Student(name,age,inyear,tall) values (#{name},#{age},#{inyear},#{tall})
+        <selectKey resultType="int" keyProperty="id" order="AFTER">
+            select @@identity
+        </selectKey>
+    </insert>
+
+    <update id="updateOne">
+        update Student set name=#{name},age=#{age},inyear=#{inyear},tall=#{tall} where id=#{id}
+    </update>
+
+    <delete id="deleteOne">
+        delete from Student where id=#{id}
+    </delete>
+
+    <select id="findAllIfAgeName" resultType="student">
+        select * from Student where 1=1
+        <if test="age>0">
+            and age>=#{age}
+        </if>
+        <if test="name!=null and name!=''">
+            and name like '%' #{name} '%'
+        </if>
+    </select>
+    <select id="findAllWhereAgeName" resultType="student">
+        select * from Student
+        <where>
+            <if test="age>0">
+                and age>=#{age}
+            </if>
+            <if test="name!=null and name!=''">
+                and name like '%' #{name} '%'
+            </if>
+        </where>
+    </select>
+    <select id="findAllChooseAgeName" resultType="student">
+        select * from Student
+        where
+        <choose>
+            <when test="age>0">
+                age>=#{age}
+            </when>
+            <when test="name!=null and name!=''">
+                name like '%' #{name} '%'
+            </when>
+            <otherwise>
+                1!=1
+            </otherwise>
+        </choose>
+    </select>
+    <select id="findAllEachArrayIds" resultType="student">
+        select * from Student
+        <!-- array is not be changed -->
+        <if test="array != null and array.length>0">
+            where id in
+            <foreach collection="array" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="findAllEachCollectionBases" resultType="student">
+        select * from Student
+        <!-- array is not be changed -->
+        <if test="list != null and list.size>0">
+            where id in
+            <foreach collection="list" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="findAllEachCollectionObjects" resultType="student">
+        select * from Student
+        <!-- array is not be changed -->
+        <if test="list != null and list.size>0">
+            where id in
+            <foreach collection="list" open="(" close=")" item="obj" separator=",">
+                #{obj.id}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- SQL part , but not command to use it -->
+    <sql id="selectAllStudentPart">
+        select * from Student
+    </sql>
+    <!-- use sql part by include tag -->
+    <select id="sqlPartUseTest" resultType="student">
+        <include refid="selectAllStudentPart"></include>
+        <if test="array != null and array.length>0">
+            where id in
+            <foreach collection="array" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- notice:
+        in the dynamic sql
+        you must care about how to write some character in xml
+        such those:
+            <   :   &lt;
+            >   :   &gt;
+            &   :   &amp;
+            "   :   &quot;
+            '   :   &apos;
+       although sometimes error wouldn't occurred.
+
+       obviously that over not remember to us,
+       so you can do by CDATA,such <![CDATA[ here fill your raw text ]]>
+            and age <![CDATA[ > ]]>
+    -->
+</mapper>
